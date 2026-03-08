@@ -38,16 +38,24 @@ function ChatRoom() {
 
     newConnection.start()
       .then(async () => {
-        const result=await newConnection.invoke("JoinGroup", room);
-        if(result==="Room does not exist"){
-          navigate(`/`);
-          alert(result);
-          return ;
+        try {
+          const result = await newConnection.invoke("JoinGroup", room);
+          if(result==="Room does not exist"){
+            navigate(`/`);
+            alert(result);
+            return ;
+          }
+          console.log("result",result);
+          await newConnection.invoke("JoinMessage", room, name);
+        } catch (error) {
+          console.error("Error joining group:", error);
+          alert("Backend not available. Chat may not work.");
         }
-        console.log("result",result);
-        await newConnection.invoke("JoinMessage", room, name);
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error("SignalR connection failed:", err);
+        alert("Backend not deployed. Real-time chat unavailable.");
+      });
 
     setConnection(newConnection);
 

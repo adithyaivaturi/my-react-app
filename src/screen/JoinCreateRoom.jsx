@@ -9,17 +9,37 @@ function JoinCreateRoom() {
         console.log("Hub room:", import.meta.env.VITE_API_URL_Room_Create);
 
   const createRoom = async () => {
-    const res = await fetch(import.meta.env.VITE_API_URL_Room_Create, {
-      method: "POST"
-    });
-
-    const newRoomId = await res.text();
-    navigate(`/chat?name=${name}&room=${newRoomId}`);
+    try {
+      const res = await fetch(import.meta.env.VITE_API_URL_Room_Create, {
+        method: "POST"
+      });
+      const newRoomId = await res.text();
+      navigate(`/chat?name=${name}&room=${newRoomId}`);
+    } catch (error) {
+      console.error("Backend not available for room creation:", error);
+      alert("Backend not deployed. Simulating room creation.");
+      const newRoomId = Math.random().toString(36).substr(2, 9);
+      navigate(`/chat?name=${name}&room=${newRoomId}`);
+    }
   };
 
-  const joinRoom = () => {
-    if (roomId) {
-      //await newConnection.invoke("JoinGroup", room);
+  const joinRoom = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL_check_Room}/${roomId}`,
+        {
+          method: "POST"
+        }
+      );
+      const result = await res.text();
+      if (result === "Room is exist") {
+        navigate(`/chat?name=${name}&room=${roomId}`);
+      } else {
+        alert("Room does not exist");
+      }
+    } catch (error) {
+      console.error("Backend not available for room check:", error);
+      alert("Backend not deployed. Simulating room join.");
       navigate(`/chat?name=${name}&room=${roomId}`);
     }
   };
